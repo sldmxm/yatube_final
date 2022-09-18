@@ -1,0 +1,20 @@
+<div class="row justify-content-center">
+  <div class="col-md-8 p-5">
+    <div class="card">
+      <div class="card-header">{{ card_header }}</div>
+      <div class="card-body"> <p>{{ card_body }}</p>
+        {% if card_form_button %}
+          {% include 'includes/form_without_button.html' %}
+          <button type="submit" class="btn btn-primary">
+            {{card_form_button}}
+          </button>
+        {% endif %}
+        {% if card_link_text %}
+          <a href="{{card_link}}" class="btn btn-link">
+            {{card_link_text}}
+          </a>
+        {% endif %}
+      </div> <!-- card body -->
+    </div> <!-- card -->
+  </div> <!-- col -->
+</div> <!-- row -->

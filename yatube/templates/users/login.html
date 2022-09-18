@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Войти{% endblock %}
+{% block content %}
+  {% url 'users:password_reset' as card_link %}
+  {% with card_header='Войти на сайт' card_form_button='Войти' card_link_text='Забыли пароль?' card_link=card_link %}
+    {% include 'users/includes/card.html' %}
+  {% endwith %}
+{% endblock %}
