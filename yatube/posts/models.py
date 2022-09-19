@@ -103,3 +103,15 @@ class Follow(models.Model):
         verbose_name='Автор',
         on_delete=models.CASCADE,
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_following',
+            ),
+            models.CheckConstraint(
+                check=~models.Q(user=models.F('author')),
+                name='restrict_self_follow',
+            ),
+        ]

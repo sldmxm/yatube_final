@@ -80,8 +80,9 @@ class PostFormsTests(PostTests):
             follow=True
         )
         self.assertEqual(Comment.objects
-                         .filter(post=self.post.pk)
                          .count(),
                          len(old_comments_pk) + 1)
         new_comment = Comment.objects.exclude(pk__in=old_comments_pk).last()
         self.assertEqual(new_comment.text, form_data.get('text'))
+        self.assertEqual(new_comment.post.pk, self.post.pk)
+        self.assertEqual(new_comment.author.pk, self.auth_user.pk)

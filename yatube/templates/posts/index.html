@@ -3,9 +3,12 @@
 {% block content %}
   {% include 'posts/includes/switcher.html' %}
   <h1> {{title}} </h1>
+{% load cache %}
+{% cache 500 index_page request.user.username%}
   {% for post in page_obj %}
     {% include 'includes/posts.html' %}
     {% if not forloop.last %}<hr>{% endif %}
   {% endfor %}
   {% include 'includes/paginator.html' %}
+{% endcache %}
 {% endblock %}

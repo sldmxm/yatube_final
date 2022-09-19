@@ -3,7 +3,6 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.views.decorators.cache import cache_page
 
 from .forms import PostForm, CommentForm
 from .models import Post, Group, Comment, Follow
@@ -16,7 +15,6 @@ def posts_page_splitter(page_number, post_list):
     return paginator.get_page(page_number)
 
 
-@cache_page(20, key_prefix='index_page')
 def index(request):
     post_list = Post.objects.select_related(
         'author', 'group')
@@ -33,10 +31,9 @@ def index(request):
 @login_required
 def follow_index(request):
     follow_list = (
-        Post.objects
-        .filter(author__following__in=Follow.objects.filter(user=request.user))
-        .select_related('author', 'group')
-    )
+        Post.objects.filter(
+            author__following__user=request.user)
+        .select_related('author', 'group'))
     page_obj = posts_page_splitter(
         request.GET.get('page'),
         follow_list)
@@ -63,14 +60,9 @@ def group_posts(request, slug):
 
 def profile(request, username):
     author = get_object_or_404(User, username=username)
-    if request.user.is_authenticated:
-        following = (
-            Follow.objects
-            .filter(user=request.user, author=author)
-            .count()
-        )
-    else:
-        following = False
+    following = (request.user.is_authenticated
+                 and author.following.filter(user=request.user).count()
+                 )
     post_list = author.posts.select_related('group')
     page_obj = posts_page_splitter(
         request.GET.get('page'),
@@ -89,7 +81,7 @@ def post_detail(request, post_id):
         pk=post_id)
     comments = Comment.objects.select_related(
         'author', 'post', ).filter(post=post_id)
-    form = CommentForm(request.POST or None)
+    form = CommentForm()
     context = {
         'post': post,
         'comments': comments,
@@ -136,24 +128,26 @@ def add_comment(request, post_id):
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user
-        comment.post = Post.objects.get(id=post_id)
+        comment.post = get_object_or_404(Post, pk=post_id)
         comment.save()
     return redirect('posts:post_detail', post_id=post_id)
 
 
 @login_required
 def profile_follow(request, username):
-    if (request.user != User.objects.get(username=username)
-            and not Follow.objects.filter(
-                user=request.user,
-                author=User.objects.get(username=username))):
-        Follow.objects.create(user=request.user,
-                              author=User.objects.get(username=username))
+    if request.user != User.objects.get(username=username):
+        Follow.objects.get_or_create(
+            user=request.user,
+            author=User.objects.get(username=username)
+        )
     return redirect('posts:profile', username)
 
 
 @login_required
 def profile_unfollow(request, username):
-    Follow.objects.filter(user=request.user,
-                          author=User.objects.get(username=username)).delete()
+    (Follow.objects.filter(
+        user=request.user,
+        author=get_object_or_404(User, username=username))
+     .delete()
+     )
     return redirect('posts:profile', username)
