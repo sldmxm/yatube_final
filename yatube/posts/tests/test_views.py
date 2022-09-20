@@ -19,6 +19,7 @@ class PostViewsTests(PostTests):
             author=self.author_user,
             text='Hello World!',
         )
+        cache.clear()
         response_before_delete = self.guest_client.get(reverse('posts:index'))
         temp_post.delete()
         response_after_delete = self.guest_client.get(reverse('posts:index'))

@@ -19,7 +19,7 @@ class PostTests(TestCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.POSTS_IN_GROUP = 13
-        cls.POSTS_IN_ANOTHER_GROUP = 17
+        cls.POSTS_IN_ANOTHER_GROUP = 14
         cls.author_user = User.objects.create_user(username='author_user')
         cls.another_author_user = User.objects.create_user(username='author2')
         cls.auth_user = User.objects.create_user(username='just_looking')
