@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
 from .forms import PostForm, CommentForm
-from .models import Post, Group, Comment, Follow
+from .models import Post, Group, Follow
 
 User = get_user_model()
 
@@ -61,7 +61,7 @@ def group_posts(request, slug):
 def profile(request, username):
     author = get_object_or_404(User, username=username)
     following = (request.user.is_authenticated
-                 and author.following.filter(user=request.user).count()
+                 and author.following.filter(user=request.user).exists()
                  )
     post_list = author.posts.select_related('group')
     page_obj = posts_page_splitter(
@@ -77,15 +77,14 @@ def profile(request, username):
 
 def post_detail(request, post_id):
     post = get_object_or_404(
-        Post.objects.select_related('author', 'group', ),
+        Post.objects
+        .select_related('author', 'group')
+        .prefetch_related('comments'),
         pk=post_id)
-    comments = Comment.objects.select_related(
-        'author', 'post', ).filter(post=post_id)
-    form = CommentForm()
     context = {
         'post': post,
-        'comments': comments,
-        'form': form,
+        'comments': post.comments.all(),
+        'form': CommentForm(),
     }
     return render(request, 'posts/post_detail.html', context)
 
@@ -124,21 +123,23 @@ def post_edit(request, post_id):
 
 @login_required
 def add_comment(request, post_id):
+    post = get_object_or_404(Post, pk=post_id)
     form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user
-        comment.post = get_object_or_404(Post, pk=post_id)
+        comment.post = post
         comment.save()
     return redirect('posts:post_detail', post_id=post_id)
 
 
 @login_required
 def profile_follow(request, username):
-    if request.user != User.objects.get(username=username):
+    author = get_object_or_404(User, username=username)
+    if request.user != author:
         Follow.objects.get_or_create(
             user=request.user,
-            author=User.objects.get(username=username)
+            author=author
         )
     return redirect('posts:profile', username)
 

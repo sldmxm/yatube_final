@@ -60,36 +60,27 @@ class PostViewsTests(PostTests):
                 )
 
     def test_follow(self):
-        response = self.authorized_client.get(reverse('posts:follow_index'))
-        self.assertEqual(len(response.context['page_obj']), 0)
         self.authorized_client.get(
             reverse('posts:profile_follow',
                     kwargs={'username': self.author_user.username}),
         )
-        response = self.authorized_client.get(reverse('posts:follow_index'))
-        self.assertQuerysetEqual(
-            response.context['page_obj'].object_list,
-            self.author_user.posts.all()[:settings.POSTS_PER_PAGE],
-            transform=lambda x: x
+        self.assertTrue(
+            Follow.objects.filter(
+                user=self.auth_user, author=self.author_user)
+            .exists()
         )
 
     def test_unfollow(self):
-        # Подписываемся
         Follow.objects.create(user=self.auth_user, author=self.author_user)
-        response = self.authorized_client.get(reverse('posts:follow_index'))
-        self.assertQuerysetEqual(
-            response.context['page_obj'].object_list,
-            self.author_user.posts.all()[:settings.POSTS_PER_PAGE],
-            transform=lambda x: x
-        )
-        # Отменяем подписку и проверяем
-        # пустую ленту подписок бывшего подписчика
         self.authorized_client.get(
             reverse('posts:profile_unfollow',
                     kwargs={'username': self.author_user.username}),
         )
-        response = self.authorized_client.get(reverse('posts:follow_index'))
-        self.assertEqual(len(response.context['page_obj']), 0)
+        self.assertFalse(
+            Follow.objects.filter(
+                user=self.auth_user, author=self.author_user)
+            .exists()
+        )
 
     def test_new_post_in_follow_index(self):
         # Подписываемся
