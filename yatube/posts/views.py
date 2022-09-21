@@ -79,11 +79,11 @@ def post_detail(request, post_id):
     post = get_object_or_404(
         Post.objects
         .select_related('author', 'group')
-        .prefetch_related('comments'),
+        .prefetch_related('comments', 'comments__author'),
         pk=post_id)
     context = {
         'post': post,
-        'comments': post.comments.all(),
+        # 'comments': post.comments.all(),
         'form': CommentForm(),
     }
     return render(request, 'posts/post_detail.html', context)
