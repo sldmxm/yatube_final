@@ -1,3 +1,41 @@
-# hw05_final
+# Социальная сеть микроблогов
+MVT-проект с пагинацией, кэшированием, регистрацией, сессионной аутентификацией. 
 
-[![CI](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml)
+Написан для практического изучения Django и Unittest.
+
+Позже написан отдельный [проект для предоставления API сервиса](https://github.com/sldmxm/api_final_yatube).
+
+## Технологии в проекте
+- Python
+- Django
+- Unittest
+
+## Функционал
+Сервис позволяет:
+- регистрировать, аутентифицировать и авторизовывать пользователей
+- смотреть, размещать, редактировать и удалять записи блога
+- подписываться на авторов
+- комментировать записи
+- вступать в группы
+- смотреть ленты всех записей, записей по подписке на авторов или группы
+- администратору упралять контентом и пользователями
+
+## Установка проекта
+Клонируйте репозиторий:
+```
+git clone git@github.com:sldmxm/yatube_final.git
+```
+Создайте и активируйте виртуальное окружение, установите все необходимые пакеты из файла requirements.txt.
+```
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+Выполните миграции
+```
+python manage.py migrate
+```
+Запустите
+```
+python manage.py runserver
+```
